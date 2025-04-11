@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.admarketplace.build</groupId>
+        <artifactId>maven-admarketplace-parent</artifactId>
+        <version>1.7.51</version>
+    </parent>
+
+    <groupId>com.admarketplace</groupId>
+    <artifactId>amp-shaapi-sdk</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0.0</version>
+
+    <name>adMarketplace Shopping Ads Asset Service API (SHAAPI) SDK</name>
+    <description>Java SDK for interacting with the adMarketplace Shopping Ads Asset Service API (SHAAPI)</description>
+    <url>https://admarketplace.com</url>
+
+    <organization>
+        <name>adMarketplace</name>
+        <url>https://admarketplace.com</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>jdeferio</id>
+            <name>Joseph Deferio</name>
+            <email>jdeferio@admarketplace.com</email>
+        </developer>
+        <developer>
+            <id>rsimoes</id>
+            <name>Roberto Simoes</name>
+            <email>rsimoes@admarketplace.com</email>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <properties>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Dependency Versions -->
+        <httpclient5.version>5.4.2</httpclient5.version>
+        <junit.jupiter.version>5.11.4</junit.jupiter.version>
+        <mockito.version>5.15.2</mockito.version>
+        <jackson.version>2.15.3</jackson.version>
+        <assertj-core.version>3.27.3</assertj-core.version>
+        <lombok.version>1.18.30</lombok.version>
+        <amp-auth-data-model.version>1.1.0</amp-auth-data-model.version>
+        <amp-shaapi-data-model.version>1.1.0</amp-shaapi-data-model.version>
+
+        <!-- Maven Plugins -->
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-javadoc-plugin.version>3.10.1</maven-javadoc-plugin.version>
+        <maven-surefire-plugin.version>3.1.0</maven-surefire-plugin.version>
+        <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
+        <maven-enforcer-plugin.version>3.3.0</maven-enforcer-plugin.version>
+    </properties>
+
+    <dependencies>
+        <!-- AMP Data Models -->
+        <dependency>
+            <groupId>com.admarketplace</groupId>
+            <artifactId>amp-api-authorization-data-model</artifactId>
+            <version>${amp-auth-data-model.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.admarketplace</groupId>
+            <artifactId>amp-shaapi-data-model</artifactId>
+            <version>${amp-shaapi-data-model.version}</version>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+		</dependency>
+
+        <!-- Jackson -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- HTTP Client -->
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>${httpclient5.version}</version>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj-core.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>${maven-enforcer-plugin.version}</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+				<executions>
+					<execution>
+						<id>enforce</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<banDuplicatePomDependencyVersions/>
+								<dependencyConvergence/>
+								<requireUpperBoundDeps/>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>javadoc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- SCM, Issue & Distribution Management -->
+    <scm>
+        <connection>scm:git:git@github.com:adMarketplace-Inc/amp-shaapi-sdk.git</connection>
+        <developerConnection>scm:git:git@github.com:adMarketplace-Inc/amp-shaapi-sdk.git</developerConnection>
+        <url>https://github.com/adMarketplace-Inc/amp-shaapi-sdk</url>
+    </scm>
+    <issueManagement>
+        <system>GitHub Issue Management</system>
+        <url>https://github.com/adMarketplace-Inc/amp-shaapi-sdk/issues</url>
+    </issueManagement>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Nexus Release Repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+</project>
