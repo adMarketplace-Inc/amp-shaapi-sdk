@@ -2,12 +2,13 @@ package com.admarketplace.sdk.shaapi.handler;
 
 import com.admarketplace.authorization.api.model.v1.AuthenticationResponse;
 import com.admarketplace.sdk.shaapi.model.TokenResponse;
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Handles HTTP responses for token retrieval requests within SHAAPI SDK.
@@ -41,11 +42,22 @@ public final class TokenResponseHandler implements HttpClientResponseHandler<Tok
             return getErrorResponse(statusCode, "An unexpected error occurred. The server response is empty.");
         }
 
+        String responseBody;
         try (var inputStream = response.getEntity().getContent()) {
-            AuthenticationResponse auth = objectMapper.readValue(inputStream, AuthenticationResponse.class);
-            return new TokenResponse(statusCode, auth.message(), auth.accessToken(), auth.expiresIn());
+            responseBody = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            return getErrorResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "An unexpected error occurred during deserialization: " + e.getMessage());
+            return getErrorResponse(statusCode, "I/O error while reading response body: " + e.getMessage());
+        }
+
+        try {
+            AuthenticationResponse auth = objectMapper.readValue(responseBody, AuthenticationResponse.class);
+            return new TokenResponse(statusCode, auth.message(), auth.accessToken(), auth.expiresIn());
+        } catch (JacksonException e) {
+            String errorMessage = "An unexpected error occurred during deserialization: "
+                    + e.getMessage()
+                    + " response body: "
+                    + responseBody;
+            return getErrorResponse(statusCode, errorMessage);
         }
     }
 

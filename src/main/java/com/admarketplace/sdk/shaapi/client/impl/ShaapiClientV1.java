@@ -2,9 +2,11 @@ package com.admarketplace.sdk.shaapi.client.impl;
 
 import com.admarketplace.sdk.shaapi.client.HttpExecutor;
 import com.admarketplace.sdk.shaapi.client.ShaapiClient;
+import com.admarketplace.sdk.shaapi.handler.ProductCountResponseHandler;
 import com.admarketplace.sdk.shaapi.handler.ProductResponseHandler;
 import com.admarketplace.sdk.shaapi.handler.TokenResponseHandler;
 import com.admarketplace.sdk.shaapi.model.AuthType;
+import com.admarketplace.sdk.shaapi.model.ProductCountResponse;
 import com.admarketplace.sdk.shaapi.model.ProductResponse;
 import com.admarketplace.sdk.shaapi.model.TokenResponse;
 import com.admarketplace.shaapi.api.model.v1.Product;
@@ -17,6 +19,7 @@ import org.apache.hc.core5.net.URIBuilder;
 import java.net.URI;
 import java.util.Collection;
 
+import static org.apache.hc.core5.http.Method.GET;
 import static org.apache.hc.core5.http.Method.DELETE;
 import static org.apache.hc.core5.http.Method.POST;
 import static org.apache.hc.core5.http.Method.PUT;
@@ -24,13 +27,14 @@ import static org.apache.hc.core5.http.Method.PUT;
 /**
  * Provides an implementation for the {@link ShaapiClient} interface, facilitating interactions with the Shopping Ads Asset API (SHAAPI).
  * This implementation leverages an {@link HttpExecutor} to perform HTTP requests for various operations such as authentication,
- * product insertion, updates, and deletion within SHAAPI system.
+ * product insertion, updates, deletion, and counting within SHAAPI system.
  *
  * <p>Key operations include:</p>
  * <ul>
  *     <li>Obtaining an authentication token through {@link #getToken(String)}.</li>
  *     <li>Upserting (inserting or updating) products via {@link #upsertProducts(String, String, Collection)}.</li>
  *     <li>Deleting products using {@link #deleteProducts(String, String, Collection)}.</li>
+ *     <li>Retrieving product count summaries through {@link #getProductCount(String, String)}.</li>
  * </ul>
  *
  * <p>Each method constructs and sends HTTP requests to SHAAPI service endpoints, handling URI construction, request execution,
@@ -50,6 +54,7 @@ public class ShaapiClientV1 extends HttpExecutor implements ShaapiClient {
 
     private final TokenResponseHandler tokenResponseHandler = new TokenResponseHandler();
     private final ProductResponseHandler productResponseHandler = new ProductResponseHandler();
+    private final ProductCountResponseHandler productCountResponseHandler = new ProductCountResponseHandler();
 
     @Override
     public TokenResponse getToken(String encodedCredentials) {
@@ -73,11 +78,25 @@ public class ShaapiClientV1 extends HttpExecutor implements ShaapiClient {
 
     private ProductResponse sendProductsRequest(Method method, String accountId, String accessToken, Collection<? extends ProductIdentifier> products) {
         try {
-            var uri = new URIBuilder(shaapiUrl).setPathSegments("asset", API_VERSION, accountId, "products").build();
+            var uri = productsUriBuilder(accountId).build();
             return sendRequest(uri, method, AuthType.BEARER, accessToken, products, productResponseHandler);
         } catch (Exception e) {
-            return new ProductResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, getMessage(e), null);
+            return new ProductResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, getMessage(e), null, null);
         }
+    }
+
+    @Override
+    public ProductCountResponse getProductCount(String accountId, String accessToken) {
+        try {
+            var uri = productsUriBuilder(accountId).appendPath("count").build();
+            return sendRequest(uri, GET, AuthType.BEARER, accessToken, null, productCountResponseHandler);
+        } catch (Exception e) {
+            return new ProductCountResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, getMessage(e), null);
+        }
+    }
+
+    private URIBuilder productsUriBuilder(String accountId) {
+        return new URIBuilder(shaapiUrl).setPathSegments("asset", API_VERSION, accountId, "products");
     }
 
     private String getMessage(Exception e) {

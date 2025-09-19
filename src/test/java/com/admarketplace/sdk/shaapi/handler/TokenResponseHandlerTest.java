@@ -50,7 +50,7 @@ class TokenResponseHandlerTest {
         TokenResponse response = new TokenResponseHandler().handleResponse(closeableHttpResponse);
 
         assertThat(response).isNotNull();
-        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        assertThat(response.getHttpStatus()).isEqualTo(HttpStatus.SC_OK);
         assertThat(response.getMessage()).contains(TestUtils.UNEXPECTED_ERROR);
         assertThat(response.getAccessToken()).isNull();
     }

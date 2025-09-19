@@ -1,6 +1,7 @@
 package com.admarketplace.sdk.shaapi.client;
 
 import com.admarketplace.sdk.shaapi.client.impl.ShaapiClientV1;
+import com.admarketplace.sdk.shaapi.model.ProductCountResponse;
 import com.admarketplace.sdk.shaapi.model.ProductResponse;
 import com.admarketplace.sdk.shaapi.model.TokenResponse;
 import com.admarketplace.shaapi.api.model.v1.Product;
@@ -55,4 +56,14 @@ public interface ShaapiClient {
     *         including success or failure details for individual product deletions.
     */
    ProductResponse deleteProducts(String accountId, String accessToken, Collection<ProductIdentifier> products);
+
+   /**
+    * Retrieves the count of available products for the specified account.
+    *
+    * @param accountId The account identifier for which product count is being retrieved.
+    * @param accessToken A valid access token for SHAAPI service authentication.
+    * @return A {@link ProductCountResponse} containing the product count information,
+    *         including account ID and the number of available products.
+    */
+   ProductCountResponse getProductCount(String accountId, String accessToken);
 }

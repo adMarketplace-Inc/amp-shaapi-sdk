@@ -4,6 +4,7 @@ import com.admarketplace.sdk.shaapi.model.AuthType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -58,6 +59,7 @@ public abstract class HttpExecutor {
 
     private ClassicHttpRequest createRequest(URI uri, Method method, AuthType authType, String authHeader, Object body) throws JsonProcessingException {
         var request = switch (method) {
+            case GET -> new HttpGet(uri);
             case POST -> new HttpPost(uri);
             case PUT -> new HttpPut(uri);
             case DELETE -> new HttpDelete(uri);

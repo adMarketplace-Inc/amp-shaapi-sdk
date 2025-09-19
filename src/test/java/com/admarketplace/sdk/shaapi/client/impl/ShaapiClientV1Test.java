@@ -2,13 +2,16 @@ package com.admarketplace.sdk.shaapi.client.impl;
 
 import com.admarketplace.sdk.shaapi.client.ShaapiClient;
 import com.admarketplace.sdk.shaapi.client.factory.ShaapiClientFactory;
+import com.admarketplace.sdk.shaapi.handler.ProductCountResponseHandler;
 import com.admarketplace.sdk.shaapi.handler.ProductResponseHandler;
 import com.admarketplace.sdk.shaapi.handler.TokenResponseHandler;
+import com.admarketplace.sdk.shaapi.model.ProductCountResponse;
 import com.admarketplace.sdk.shaapi.model.ProductResponse;
 import com.admarketplace.sdk.shaapi.model.TokenResponse;
 import com.admarketplace.sdk.shaapi.util.TestUtils;
 import com.admarketplace.shaapi.api.model.v1.Failure;
 import com.admarketplace.shaapi.api.model.v1.Product;
+import com.admarketplace.shaapi.api.model.v1.ProductCount;
 import com.admarketplace.shaapi.api.model.v1.ProductIdentifier;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -103,6 +106,15 @@ class ShaapiClientV1Test {
         verify(httpClient).close();
     }
 
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("productCountTestProvider")
+    void testGetProductCount(String ignoredScenarioName, String accessToken, ProductCountResponse expectedResponse) throws Exception {
+        when(httpClient.execute(any(ClassicHttpRequest.class), any(ProductCountResponseHandler.class))).thenReturn(expectedResponse);
+
+        ProductCountResponse actualResponse = shaapiClient.getProductCount(TestUtils.ACCOUNT_ID, accessToken);
+        assertProductCount(actualResponse, expectedResponse);
+    }
+
     private void assertToken(TokenResponse actualResponse, TokenResponse expectedResponse) throws IOException {
         assertThat(actualResponse).isNotNull();
         assertThat(actualResponse.getHttpStatus()).isEqualTo(expectedResponse.getHttpStatus());
@@ -124,31 +136,62 @@ class ShaapiClientV1Test {
         verify(httpClient).close();
     }
 
+    private void assertProductCount(ProductCountResponse actualResponse, ProductCountResponse expectedResponse) throws IOException {
+        assertThat(actualResponse).isNotNull();
+        assertThat(actualResponse.getHttpStatus()).isEqualTo(expectedResponse.getHttpStatus());
+        assertThat(actualResponse.getMessage()).isEqualTo(expectedResponse.getMessage());
+        assertThat(actualResponse.getResult()).isEqualTo(expectedResponse.getResult());
+
+        verify(httpClient).execute(any(ClassicHttpRequest.class), any(ProductCountResponseHandler.class));
+        verify(httpClient).close();
+    }
+
+    private static Stream<Arguments> productCountTestProvider() {
+        return Stream.of(
+                Arguments.of(
+                        "Successful case with product count",
+                        TestUtils.ACCESS_TOKEN,
+                        new ProductCountResponse(HttpStatus.SC_OK, TestUtils.SUCCESS,
+                                new ProductCount(TestUtils.ACCOUNT_ID, 250L))
+                ),
+                Arguments.of(
+                        "Invalid access token case",
+                        "invalidToken",
+                        new ProductCountResponse(HttpStatus.SC_UNAUTHORIZED, "Your access token is invalid or has expired. Please re-authenticate and try again.", null)
+                ),
+                Arguments.of(
+                        "Service unavailable case",
+                        TestUtils.ACCESS_TOKEN,
+                        new ProductCountResponse(HttpStatus.SC_SERVICE_UNAVAILABLE, "Service temporarily unavailable. Please try again later.", null)
+                )
+        );
+    }
+
     private static Stream<Arguments> productTestProvider() {
         return Stream.of(
                 Arguments.of(
                         "Successful case with single product",
                         TestUtils.ACCESS_TOKEN,
                         getProductList("123"),
-                        new ProductResponse(HttpStatus.SC_OK, "Success", null)
+                        new ProductResponse(HttpStatus.SC_OK, "Success", null, null)
                 ),
                 Arguments.of(
                         "Successful case with multiple products",
                         TestUtils.ACCESS_TOKEN,
                         getProductList("123", "456"),
-                        new ProductResponse(HttpStatus.SC_OK, "Success", null)
+                        new ProductResponse(HttpStatus.SC_OK, "Success", null, null)
                 ),
                 Arguments.of(
                         "Invalid access token case",
                         TestUtils.ACCESS_TOKEN,
                         getProductList("123"),
-                        new ProductResponse(HttpStatus.SC_UNAUTHORIZED, "Your access token is invalid or has expired. Please re-authenticate and try again.", null)
+                        new ProductResponse(HttpStatus.SC_UNAUTHORIZED, "Your access token is invalid or has expired. Please re-authenticate and try again.", null, null)
                 ),
                 Arguments.of(
                         "Partial success case (some products fail)",
                         TestUtils.ACCESS_TOKEN,
                         getProductList("123", "@128B~!"),
-                        new ProductResponse(HttpStatus.SC_MULTI_STATUS,"Partial Success", List.of(
+                        new ProductResponse(HttpStatus.SC_MULTI_STATUS,"Partial Success", null, List.of(
                                 new Failure(207, Product.builder().id("@128B~!").build(), List.of("Invalid ID")))
                         )
                 ),
@@ -156,7 +199,7 @@ class ShaapiClientV1Test {
                         "Upsert failure scenario",
                         TestUtils.ACCESS_TOKEN,
                         getProductList("789"),
-                        new ProductResponse(HttpStatus.SC_BAD_REQUEST,"Upsert Failed", List.of(
+                        new ProductResponse(HttpStatus.SC_BAD_REQUEST,"Upsert Failed", null, List.of(
                                 new Failure(400, Product.builder().id("789").build(), List.of("Server error")))
                         )
                 )
@@ -167,7 +210,5 @@ class ShaapiClientV1Test {
          return Arrays.stream(ids)
                 .map(id -> (Product) Product.builder().id(id).build())
                 .toList();
-
-
     }
 }
