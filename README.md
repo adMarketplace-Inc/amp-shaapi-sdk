@@ -67,13 +67,13 @@ To use the SDK in your project, add the following dependency from Maven Central:
 <dependency>
     <groupId>com.admarketplace</groupId>
     <artifactId>amp-shaapi-sdk</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.2</version>
 </dependency>
 ```
 
 #### Gradle:
 ```kotlin
-implementation("com.admarketplace:amp-shaapi-sdk:1.0.1")
+implementation("com.admarketplace:amp-shaapi-sdk:1.1.2")
 ```
 
 ### Input variables
@@ -132,9 +132,11 @@ import com.admarketplace.shaapi.api.model.v1.Product;
             .build());
 
     // Upsert products
-    ProductResponse productResponse = shaapiClient.upsertProducts(tokenResponse.accessToken(), products);
-    
+    ProductResponse productResponse = shaapiClient.upsertProducts(accountId, tokenResponse.getAccessToken(), products);
+
     if (productResponse.getHttpStatus() != 200) {
+        String requestId = productResponse.getRequestId();
+        log.warn("Unsuccessful request-id={} with http-status={}", requestId, productResponse.getHttpStatus());
         // Error handling
     }
 ```
@@ -145,17 +147,34 @@ import com.admarketplace.sdk.shaapi.model.ProductResponse;
 import com.admarketplace.shaapi.api.model.v1.ProductIdentifier;
 
     // Prepare product list
-    List<ProductIdentifier> products = List.of(Product.builder()
+    List<ProductIdentifier> products = List.of(ProductIdentifier.builder()
             .id("id")
             .country("US")
             .language("en")
             .build());
 
     // Delete products
-    ProductResponse productResponse = shaapiClient.deleteProducts(tokenResponse.accessToken(), products);
-    
+    ProductResponse productResponse = shaapiClient.deleteProducts(accountId, tokenResponse.getAccessToken(), products);
+
     if (productResponse.getHttpStatus() != 200) {
+        String requestId = productResponse.getRequestId();
+        log.warn("Unsuccessful request-id={} with http-status={}", requestId, productResponse.getHttpStatus());
         // Error handling
+    }
+```
+
+### Get Product Count
+```java
+import com.admarketplace.sdk.shaapi.model.ProductCountResponse;
+import com.admarketplace.shaapi.api.model.v1.ProductCount;
+
+    ProductCountResponse countResponse = shaapiClient.getProductCount(accountId, tokenResponse.getAccessToken());
+
+    if (countResponse.getHttpStatus() != 200) {
+        // Error handling
+    } else {
+        ProductCount count = countResponse.getResult();
+        // Use count
     }
 ```
 ---
